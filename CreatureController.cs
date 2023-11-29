@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace CreatureModels
 {
@@ -8,12 +9,10 @@ namespace CreatureModels
     {
         public class CreatureController : MonoBehaviour
         {
-            public static Texture TexBase01;
-            public static Texture TexBase02;
-            public static Texture TexBase03;
-            public static Texture TexBase04;
+                     
 
             GameObject lethalyeenObj = null;
+            
             void Start()
             {
                 gameObject.GetComponentInChildren<LODGroup>().enabled = false;
@@ -25,58 +24,46 @@ namespace CreatureModels
 
                 //Assetbundle Commune//========
 
-                GameObject lethalyeen = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<GameObject>("assets/lethalcreature.fbx");
+                AssetHandler.TryLoadAssets();
 
-                TexBase01 = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/lcred.png");
-                TexBase02 = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/lcgreen.png");
-                TexBase03 = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/lchazard.png");
-                TexBase04 = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/lcpajama.png");
-
-                Texture TexSpec = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/creature_spec.png");
-                Texture TexEmit = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/creature_emt.png");
-                Texture TexNorm = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<Texture>("assets/textures/creature_norm.png");
-
-                RuntimeAnimatorController animController = LC_API.BundleAPI.BundleLoader.GetLoadedAsset<RuntimeAnimatorController>("assets/creaturecontrol.controller");
+                if(lethalyeenObj == null)
+                {   
+                    lethalyeenObj = Instantiate(AssetHandler.lethalyeen);
+                }
 
                 //=================
                 //Scaling//========
-                var newLethalyeen = Instantiate(lethalyeen);
-                newLethalyeen.transform.localScale = new Vector3(1, 1, 1);
-                var rig = gameObject.transform.Find("ScavengerModel").Find("metarig");
-                var spine = rig.Find("spine").Find("spine.001");
-                newLethalyeen.transform.SetParent(spine);
-                newLethalyeen.transform.localPosition = new Vector3(0, 0f, 0);
-                newLethalyeen.transform.localEulerAngles = Vector3.zero;
+                lethalyeenObj.transform.localScale = Vector3.one;
+                //var rig = gameObject.transform.Find("ScavengerModel").Find("metarig");
+                var rig = gameObject.transform.Find("ScavengerModel/metarig");
+                //var spine = rig.Find("spine").Find("spine.001");
+                var spine = rig.Find("spine/spine.001");
+
+                lethalyeenObj.transform.SetParent(spine);
+                //newLethalyeen.transform.localPosition = new Vector3(0, 0f, 0);
+                lethalyeenObj.transform.localPosition = Vector3.zero;
+                //newLethalyeen.transform.localEulerAngles = Vector3.zero;
+                lethalyeenObj.transform.localRotation = Quaternion.identity;
 
                 var LOD1 = gameObject.GetComponent<PlayerControllerB>().thisPlayerModel;
-                var goodShader = LOD1.material.shader;
-                var mesh = newLethalyeen.GetComponentInChildren<SkinnedMeshRenderer>();
+                var goodShader = LOD1.material.shader; //Should be using sharedMaterial, however not sure if Zeekerss just made it this way >.>
+                var mesh = lethalyeenObj.GetComponentInChildren<SkinnedMeshRenderer>();
 
                 //=================
-                //Materials and Textures//========
+                //Materials and Textures//========          
 
-                mesh.materials[0].shader = goodShader;
-
-                mesh.materials[0].EnableKeyword("_EMISSION");
-                mesh.materials[0].EnableKeyword("_SPECGLOSSMAP");
-                mesh.materials[0].EnableKeyword("_NORMALMAP");
-
-                mesh.materials[0].SetTexture("_BaseColorMap", TexBase01);
-                mesh.materials[0].SetTexture("_SpecularColorMap", TexSpec);
-                mesh.materials[0].SetFloat("_Smoothness", .30f);
-                mesh.materials[0].SetTexture("_EmissiveColorMap", TexEmit);
-                mesh.materials[0].SetTexture("_BumpMap", TexNorm);
-                mesh.materials[0].SetColor("_EmissiveColor", Color.white);
-
+                MaterialAssembler.UpdateMaterial(ref mesh.materials[0], ref goodShader, ref AssetHandler.TexBase01);
                 HDMaterial.ValidateMaterial(mesh.materials[0]);
 
 
                 //=================
                 //Dark magik IK voodoo//========
 
-                var anim = newLethalyeen.GetComponentInChildren<Animator>();
-                anim.runtimeAnimatorController = animController;
-                var ikController = newLethalyeen.AddComponent<IKController>();
+                var anim = lethalyeenObj.GetComponentInChildren<Animator>();
+                anim.runtimeAnimatorController = AssetHandler.animController;
+
+
+                var ikController = lethalyeenObj.AddComponent<IKController>();
                 var lthigh = rig.Find("spine").Find("thigh.L");
                 var rthigh = rig.Find("spine").Find("thigh.R");
                 var lshin = lthigh.Find("shin.L");
@@ -114,18 +101,19 @@ namespace CreatureModels
                 ikController.leftHandTarget = lHandOffset.transform;
                 ikController.rightHandTarget = rHandOffset.transform;
                 ikController.ikActive = true;
-
-                lethalyeenObj = newLethalyeen;
             }
 
-            private void LateUpdate()
+            private void LateUpdate()//LateUpdate? this has to run multiple times??
             {
                 if (lethalyeenObj != null)
                 {
                     lethalyeenObj.transform.localPosition = new Vector3(0, -0.15f, 0);
-                    var rig = gameObject.transform.Find("ScavengerModel").Find("metarig");
-                    var trans = rig.Find("spine").Find("spine.001").Find("spine.002").Find("spine.003");
-                    lethalyeenObj.transform.Find("Armature").Find("Hips").Find("Spine").Find("Chest").localEulerAngles = trans.localEulerAngles;
+                    //var rig = gameObject.transform.Find("ScavengerModel").Find("metarig");
+                    var rig = gameObject.transform.Find("ScavengerModel/metarig");
+                    //var trans = rig.Find("spine").Find("spine.001").Find("spine.002").Find("spine.003");
+                    var trans = rig.Find("spine/spine.001/spine.002/spine.003");
+                    //lethalyeenObj.transform.Find("Armature").Find("Hips").Find("Spine").Find("Chest").localEulerAngles = trans.localEulerAngles;
+                    lethalyeenObj.transform.Find("Armature/Hips/Spine/Chest").localRotation = trans.localRotation;
                 }
 
             }

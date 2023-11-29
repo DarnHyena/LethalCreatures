@@ -46,7 +46,7 @@ namespace CreatureModels.Patches
         public static void DisablePlayerModel(ref PlayerControllerB __instance, GameObject playerObject)
         {
             var localPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (playerObject == localPlayer) return;
+            //if (playerObject == localPlayer) return;
             playerObject.gameObject.GetComponentInChildren<LODGroup>().enabled = false;
             var meshes = playerObject.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
             foreach (var LODmesh in meshes)
@@ -70,19 +70,19 @@ namespace CreatureModels.Patches
             switch (suitID)
             {
                 case 0:
-                    tex = LethalCreature.CreatureController.TexBase01;
+                    tex = AssetHandler.TexBase01;
                     break;
                 case 1:
-                    tex = LethalCreature.CreatureController.TexBase02;
+                    tex = AssetHandler.TexBase02;
                     break;
                 case 2:
-                    tex = LethalCreature.CreatureController.TexBase03;
+                    tex = AssetHandler.TexBase03;
                     break;
                 case 3:
-                    tex = LethalCreature.CreatureController.TexBase04;
+                    tex = AssetHandler.TexBase04;
                     break;
                 default:
-                    tex = LethalCreature.CreatureController.TexBase01;
+                    tex = AssetHandler.TexBase01;
                     break;
             }
 

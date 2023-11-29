@@ -1,26 +1,27 @@
 using BepInEx;
 using HarmonyLib;
-using System.Reflection;
-using LC_API;
-using GameNetcodeStuff;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using Unity.Netcode;
-using System;
-using System.Runtime.CompilerServices;
+using BepInEx.Logging;
 
 namespace CreatureModels 
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin(GUID, ModName, Version)]
     public class Plugin : BaseUnityPlugin
     {
-        public static Harmony _harmony;
+        public const string Version = "1.2.3"; //since new refactor but no new code or assets
+        public const string ModName = "Local Hyena Creature Models";
+        public const string GUID = "lh.creaturemodels";
+
+        public const string assetBundleName = "lethalcreature";
+
+        public static Harmony _harmony = new Harmony(GUID);
+        public static ManualLogSource Log;
         private void Awake()
         {
-            _harmony = new Harmony(PluginInfo.PLUGIN_GUID);
+            //_harmony = new Harmony(PluginInfo.PLUGIN_GUID);
             _harmony.PatchAll();
-            Logger.LogInfo("HyenaNoises");
-            Logger.LogInfo($"{PluginInfo.PLUGIN_GUID} loaded");
+            Log = Logger;
+            Log.LogInfo("HyenaNoises");
+            Log.LogInfo($"{PluginInfo.PLUGIN_GUID} loaded");
         }
     }
 }
